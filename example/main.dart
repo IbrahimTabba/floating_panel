@@ -1,6 +1,10 @@
 import 'package:floatingpanel/floatingpanel.dart';
 import 'package:flutter/material.dart';
 
+void main(){
+  runApp(Homepage());
+}
+
 class Homepage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -17,9 +21,9 @@ class Homepage extends StatelessWidget {
 
               buttons: [
                 // Add Icons to the buttons list.
-                Icons.message,
-                Icons.photo_camera,
-                Icons.video_library
+//                Icons.message,
+//                Icons.photo_camera,
+//                Icons.video_library
               ],
             ),
           ],

@@ -28,6 +28,8 @@ class FloatBoxPanel extends StatefulWidget {
   final Curve dockAnimCurve;
   final List<IconData> buttons;
   final Function(int) onPressed;
+  final Widget widget;
+  final Widget bubble;
 
   FloatBoxPanel(
       {this.buttons,
@@ -50,7 +52,7 @@ class FloatBoxPanel extends StatefulWidget {
       this.dockOffset,
       this.dockAnimCurve,
       this.dockAnimDuration,
-      this.onPressed});
+      this.onPressed, this.widget, this.bubble});
 
   @override
   _FloatBoxState createState() => _FloatBoxState();
@@ -61,8 +63,8 @@ class _FloatBoxState extends State<FloatBoxPanel> {
   PanelState _panelState = PanelState.closed;
 
   // Default positions for the panel;
-  double _positionTop = 0.0;
-  double _positionLeft = 0.0;
+  double _positionTop ;
+  double _positionLeft ;
 
   // ** PanOffset ** is used to calculate the distance from the edge of the panel
   // to the cursor, to calculate the position when being dragged;
@@ -77,14 +79,17 @@ class _FloatBoxState extends State<FloatBoxPanel> {
 
   @override
   void initState() {
-    _positionTop = widget.positionTop ?? 0;
-    _positionLeft = widget.positionLeft ?? 0;
+
 
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    if(_positionTop == null || _positionLeft == null){
+      _positionTop = widget.positionTop ?? MediaQuery.of(context).size.height/2;
+      _positionLeft = widget.positionLeft ?? MediaQuery.of(context).size.width - ((widget.size??70.0)/3 * 2);
+    }
     // Width and height of page is required for the dragging the panel;
     double _pageWidth = MediaQuery.of(context).size.width;
     double _pageHeight = MediaQuery.of(context).size.height;
@@ -201,136 +206,127 @@ class _FloatBoxState extends State<FloatBoxPanel> {
 
     // Animated positioned widget can be moved to any part of the screen with
     // animation;
-    return AnimatedPositioned(
-      duration: Duration(
-        milliseconds: _movementSpeed,
-      ),
-      top: _positionTop,
-      left: _positionLeft,
-      curve: widget.dockAnimCurve ?? Curves.fastLinearToSlowEaseIn,
-
-      // Animated Container is used for easier animation of container height;
+    return IgnorePointer(
       child: AnimatedContainer(
-        duration: Duration(milliseconds: widget.panelAnimDuration ?? 600),
-        width: _widgetSize,
-        height: _panelHeight(),
-        decoration: BoxDecoration(
-          color: widget.backgroundColor ?? Color(0xFF333333),
-          borderRadius: _borderRadius(),
-          border: _panelBorder(),
-        ),
-        curve: widget.panelAnimCurve ?? Curves.fastLinearToSlowEaseIn,
-        child: Wrap(
-          direction: Axis.horizontal,
-          children: [
-            // Gesture detector is required to detect the tap and drag on the panel;
-            GestureDetector(
-              onPanEnd: (event) {
-                setState(
-                  () {
-                    _forceDock();
-                  },
-                );
-              },
-              onPanStart: (event) {
-                // Detect the offset between the top and left side of the panel and
-                // x and y position of the touch(click) event;
-                _panOffsetTop = event.globalPosition.dy - _positionTop;
-                _panOffsetLeft = event.globalPosition.dx - _positionLeft;
-              },
-              onPanUpdate: (event) {
-                setState(
-                  () {
-                    // Close Panel if opened;
-                    _panelState = PanelState.closed;
+        color: _panelState == PanelState.open? Colors.black.withOpacity(0.2):Colors.transparent,
+        duration: Duration(milliseconds: 300),
+        child: SafeArea(
+          child: SizedBox(
+            width: _pageWidth,
+            height: _pageHeight,
+            child: Stack(
+              children: [
+                AnimatedPositioned(
+                  duration: Duration(
+                    milliseconds: _movementSpeed,
+                  ),
+                  top: _positionTop,
+                  left: _positionLeft,
+                  curve: widget.dockAnimCurve ?? Curves.fastLinearToSlowEaseIn,
 
-                    // Reset Movement Speed;
-                    _movementSpeed = 0;
+                  // Animated Container is used for easier animation of container height;
+                  child: GestureDetector(
+                    onPanEnd: (event) {
+                      setState(
+                        () {
+                          _forceDock();
+                        },
+                      );
+                    },
+                    onPanStart: (event) {
+                      // Detect the offset between the top and left side of the panel and
+                      // x and y position of the touch(click) event;
+                      _panOffsetTop = event.globalPosition.dy - _positionTop;
+                      _panOffsetLeft = event.globalPosition.dx - _positionLeft;
+                    },
+                    onPanUpdate: (event) {
+                      setState(
+                        () {
+                          // Close Panel if opened;
+                          _panelState = PanelState.closed;
 
-                    // Calculate the top position of the panel according to pan;
-                    _positionTop = event.globalPosition.dy - _panOffsetTop;
+                          // Reset Movement Speed;
+                          _movementSpeed = 0;
 
-                    // Check if the top position is exceeding the dock boundaries;
-                    if (_positionTop < 0 + _dockBoundary()) {
-                      _positionTop = 0 + _dockBoundary();
-                    }
-                    if (_positionTop >
-                        (_pageHeight - _panelHeight()) - _dockBoundary()) {
-                      _positionTop =
-                          (_pageHeight - _panelHeight()) - _dockBoundary();
-                    }
+                          // Calculate the top position of the panel according to pan;
+                          _positionTop = event.globalPosition.dy - _panOffsetTop;
 
-                    // Calculate the Left position of the panel according to pan;
-                    _positionLeft = event.globalPosition.dx - _panOffsetLeft;
+                          // Check if the top position is exceeding the dock boundaries;
+                          if (_positionTop < 0 + _dockBoundary()) {
+                            _positionTop = 0 + _dockBoundary();
+                          }
+                          if (_positionTop >
+                              (_pageHeight - _panelHeight()) - _dockBoundary()) {
+                            _positionTop =
+                                (_pageHeight - _panelHeight()) - _dockBoundary();
+                          }
 
-                    // Check if the left position is exceeding the dock boundaries;
-                    if (_positionLeft < 0 + _dockBoundary()) {
-                      _positionLeft = 0 + _dockBoundary();
-                    }
-                    if (_positionLeft >
-                        (_pageWidth - _widgetSize) - _dockBoundary()) {
-                      _positionLeft =
-                          (_pageWidth - _widgetSize) - _dockBoundary();
-                    }
-                  },
-                );
-              },
-              onTap: () {
-                setState(
-                  () {
-                    // Set the animation speed to custom duration;
-                    _movementSpeed = widget.panelAnimDuration ?? 200;
+                          // Calculate the Left position of the panel according to pan;
+                          _positionLeft = event.globalPosition.dx - _panOffsetLeft;
 
-                    if (_panelState == PanelState.open) {
-                      // If panel state is "open", set it to "closed";
-                      _panelState = PanelState.closed;
+                          // Check if the left position is exceeding the dock boundaries;
+                          if (_positionLeft < 0 + _dockBoundary()) {
+                            _positionLeft = 0 + _dockBoundary();
+                          }
+                          if (_positionLeft >
+                              (_pageWidth - _widgetSize) - _dockBoundary()) {
+                            _positionLeft =
+                                (_pageWidth - _widgetSize) - _dockBoundary();
+                          }
+                        },
+                      );
+                    },
+                    onTap: () {
+                      setState(() {
+                        if(_panelState == PanelState.closed){
+                          _panelState = PanelState.open;
+                          //_positionLeft = _openDockLeft();
+                        }
+                        else{
+                          _panelState = PanelState.closed;
+                          //_forceDock();
+                        }
+                        _positionTop = 0.0;
+                      });
+                      return;
+                      setState(
+                        () {
+                          // Set the animation speed to custom duration;
+                          _movementSpeed = widget.panelAnimDuration ?? 200;
 
-                      // Reset panel position, dock it to nearest edge;
-                      _forceDock();
+                          if (_panelState == PanelState.open) {
+                            // If panel state is "open", set it to "closed";
+                            _panelState = PanelState.closed;
 
-                      print("Float panel closed.");
-                    } else {
-                      // If panel state is "closed", set it to "open";
-                      _panelState = PanelState.open;
+                            // Reset panel position, dock it to nearest edge;
+                            _forceDock();
 
-                      // Set the left side position;
-                      _positionLeft = _openDockLeft();
+                            print("Float panel closed.");
+                          } else {
+                            // If panel state is "closed", set it to "open";
+                            _panelState = PanelState.open;
 
-                      _calcPanelTop();
+                            // Set the left side position;
+                            _positionLeft = _openDockLeft();
 
-                      print("Float Panel Open.");
-                    }
-                  },
-                );
-              },
-              child: _FloatButton(
-                size: widget.size ?? 70.0,
-                icon: widget.panelIcon ?? Icons.add,
-                color: widget.contentColor ?? Colors.white,
-                iconSize: widget.iconSize ?? 24.0,
-              ),
-            ),
-            Visibility(
-              visible: true, // TODO:: _contentVisibility,
-              child: Container(
-                child: Column(
-                  children: List.generate(_buttons.length, (index) {
-                    return GestureDetector(
-                      onTap: () {
-                        widget.onPressed(index);
-                      },
-                      child: _FloatButton(
-                        size: widget.size ?? 70.0,
-                        icon: _buttons[index] ?? Icons.add,
-                        color: widget.contentColor ?? Colors.white,
-                        iconSize: widget.iconSize ?? 24.0,
-                      ),
-                    );
-                  }),
+                            _calcPanelTop();
+
+                            print("Float Panel Open.");
+                          }
+                        },
+                      );
+                    },
+                    child: widget.bubble,
+                  ),
                 ),
-              ),
+                if(_panelState == PanelState.open)
+                  Container(
+                    margin: EdgeInsets.only(top: widget.size??70.0),
+                    child: widget.widget,
+                  )
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
