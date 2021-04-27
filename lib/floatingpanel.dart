@@ -264,6 +264,8 @@ class _FloatBoxState extends State<FloatBoxPanel> with TickerProviderStateMixin 
                       setState(() {
                         _closed = true;
                       });
+                      if(widget.onCloseCallBack!=null)
+                        widget.onCloseCallBack();
                       return;
                     }
                     setState(
