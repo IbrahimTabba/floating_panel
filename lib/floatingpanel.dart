@@ -7,31 +7,31 @@ enum DockType { inside, outside }
 enum PanelState { open, closed }
 
 class FloatBoxPanel extends StatefulWidget {
-  final double positionTop;
-  final double positionLeft;
-  final Color borderColor;
-  final double borderWidth;
-  final double size;
-  final double iconSize;
-  final IconData panelIcon;
-  final BorderRadius borderRadius;
-  final Color backgroundColor;
-  final Color contentColor;
-  final PanelShape panelShape;
-  final PanelState panelState;
-  final double panelOpenOffset;
-  final int panelAnimDuration;
-  final Curve panelAnimCurve;
-  final DockType dockType;
-  final double dockOffset;
-  final int dockAnimDuration;
-  final Curve dockAnimCurve;
-  final List<IconData> buttons;
-  final Function(int) onPressed;
-  final Widget widget;
-  final Widget bubble;
-  final bool cancelable;
-  final Function onCloseCallBack;
+  final double? positionTop;
+  final double? positionLeft;
+  final Color? borderColor;
+  final double? borderWidth;
+  final double? size;
+  final double? iconSize;
+  final IconData? panelIcon;
+  final BorderRadius? borderRadius;
+  final Color? backgroundColor;
+  final Color? contentColor;
+  final PanelShape? panelShape;
+  final PanelState? panelState;
+  final double? panelOpenOffset;
+  final int? panelAnimDuration;
+  final Curve? panelAnimCurve;
+  final DockType? dockType;
+  final double? dockOffset;
+  final int? dockAnimDuration;
+  final Curve? dockAnimCurve;
+  final List<IconData>? buttons;
+  final Function(int)? onPressed;
+  final Widget? widget;
+  final Widget? bubble;
+  final bool? cancelable;
+  final Function? onCloseCallBack;
 
   FloatBoxPanel(
       {this.buttons,
@@ -65,8 +65,8 @@ class _FloatBoxState extends State<FloatBoxPanel> with TickerProviderStateMixin 
   PanelState _panelState = PanelState.closed;
 
   // Default positions for the panel;
-  double _positionTop ;
-  double _positionLeft ;
+  double? _positionTop ;
+  double? _positionLeft ;
 
   // ** PanOffset ** is used to calculate the distance from the edge of the panel
   // to the cursor, to calculate the position when being dragged;
@@ -81,8 +81,8 @@ class _FloatBoxState extends State<FloatBoxPanel> with TickerProviderStateMixin 
   bool _dragging = false;
   bool _closed = false;
 
-  AnimationController _pulseController;
-  Animation<double> _pulse;
+  late AnimationController _pulseController;
+  late Animation<double> _pulse;
 
   @override
   void initState() {
@@ -106,7 +106,7 @@ class _FloatBoxState extends State<FloatBoxPanel> with TickerProviderStateMixin 
     double _pageHeight = MediaQuery.of(context).size.height;
 
     // All Buttons;
-    List<IconData> _buttons = widget.buttons;
+    List<IconData>? _buttons = widget.buttons;
 
     // Dock offset creates the boundary for the page depending on the DockType;
     double _dockOffset = widget.dockOffset ?? 20.0;
@@ -148,7 +148,7 @@ class _FloatBoxState extends State<FloatBoxPanel> with TickerProviderStateMixin 
       if (widget.buttons == null) {
         return 0;
       } else {
-        return widget.buttons.length.toDouble();
+        return widget.buttons!.length.toDouble();
       }
     }
 
@@ -168,14 +168,14 @@ class _FloatBoxState extends State<FloatBoxPanel> with TickerProviderStateMixin 
     // Panel top needs to be recalculated while opening the panel, to make sure
     // the height doesn't exceed the bottom of the page;
     void _calcPanelTop() {
-      if (_positionTop + _panelHeight() > _pageHeight + _dockBoundary()) {
+      if (_positionTop! + _panelHeight() > _pageHeight + _dockBoundary()) {
         _positionTop = _pageHeight - _panelHeight() + _dockBoundary();
       }
     }
 
     // Dock Left position when open;
     double _openDockLeft() {
-      if (_positionLeft < (_pageWidth / 2)) {
+      if (_positionLeft! < (_pageWidth / 2)) {
         // If panel is docked to the left;
         return widget.panelOpenOffset ?? 30.0;
       } else {
@@ -185,8 +185,8 @@ class _FloatBoxState extends State<FloatBoxPanel> with TickerProviderStateMixin 
     }
 
     // Panel border is only enabled if the border width is greater than 0;
-    Border _panelBorder() {
-      if (widget.borderWidth != null && widget.borderWidth > 0) {
+    Border? _panelBorder() {
+      if (widget.borderWidth != null && widget.borderWidth! > 0) {
         return Border.all(
           color: widget.borderColor ?? Color(0xFF333333),
           width: widget.borderWidth ?? 0.0,
@@ -199,7 +199,7 @@ class _FloatBoxState extends State<FloatBoxPanel> with TickerProviderStateMixin 
     // Force dock will dock the panel to it's nearest edge of the screen;
     void _forceDock() {
       // Calculate the center of the panel;
-      double center = _positionLeft + (_widgetSize / 2);
+      double center = _positionLeft! + (_widgetSize / 2);
 
       // Set movement speed to the custom duration property or '300' default;
       _movementSpeed = widget.dockAnimDuration ?? 300;
@@ -258,14 +258,14 @@ class _FloatBoxState extends State<FloatBoxPanel> with TickerProviderStateMixin 
                 child: GestureDetector(
                   onPanEnd: (event) {
                     if(
-                        (_positionTop <=  MediaQuery.of(context).size.height - (widget.size??70.0) && _positionTop >=  MediaQuery.of(context).size.height - 260 - (widget.size??70.0)) &&
-                        ((_positionLeft + (widget.size??70.0)/2 ) >= MediaQuery.of(context).size.width/2 - 60  && (_positionLeft + (widget.size??70.0)/2 ) <= MediaQuery.of(context).size.width/2 + 60)
+                        (_positionTop! <=  MediaQuery.of(context).size.height - (widget.size??70.0) && _positionTop! >=  MediaQuery.of(context).size.height - 260 - (widget.size??70.0)) &&
+                        ((_positionLeft! + (widget.size??70.0)/2 ) >= MediaQuery.of(context).size.width/2 - 60  && (_positionLeft! + (widget.size??70.0)/2 ) <= MediaQuery.of(context).size.width/2 + 60)
                     ){
                       setState(() {
                         _closed = true;
                       });
                       if(widget.onCloseCallBack!=null)
-                        widget.onCloseCallBack();
+                        widget.onCloseCallBack!();
                       return;
                     }
                     setState(
@@ -282,8 +282,8 @@ class _FloatBoxState extends State<FloatBoxPanel> with TickerProviderStateMixin 
                   onPanStart: (event) {
                     // Detect the offset between the top and left side of the panel and
                     // x and y position of the touch(click) event;
-                    _panOffsetTop = event.globalPosition.dy - _positionTop;
-                    _panOffsetLeft = event.globalPosition.dx - _positionLeft;
+                    _panOffsetTop = event.globalPosition.dy - _positionTop!;
+                    _panOffsetLeft = event.globalPosition.dx - _positionLeft!;
                     if(!_dragging){
                       setState(() {
                         _dragging = true;
@@ -303,10 +303,10 @@ class _FloatBoxState extends State<FloatBoxPanel> with TickerProviderStateMixin 
                         _positionTop = event.globalPosition.dy - _panOffsetTop;
 
                         // Check if the top position is exceeding the dock boundaries;
-                        if (_positionTop < 0 + _dockBoundary()) {
+                        if (_positionTop! < 0 + _dockBoundary()) {
                           _positionTop = 0 + _dockBoundary();
                         }
-                        if (_positionTop >
+                        if (_positionTop! >
                             (_pageHeight - _panelHeight()) - _dockBoundary()) {
                           _positionTop =
                               (_pageHeight - _panelHeight()) - _dockBoundary();
@@ -316,10 +316,10 @@ class _FloatBoxState extends State<FloatBoxPanel> with TickerProviderStateMixin 
                         _positionLeft = event.globalPosition.dx - _panOffsetLeft;
 
                         // Check if the left position is exceeding the dock boundaries;
-                        if (_positionLeft < 0 + _dockBoundary()) {
+                        if (_positionLeft! < 0 + _dockBoundary()) {
                           _positionLeft = 0 + _dockBoundary();
                         }
-                        if (_positionLeft >
+                        if (_positionLeft! >
                             (_pageWidth - _widgetSize) - _dockBoundary()) {
                           _positionLeft =
                               (_pageWidth - _widgetSize) - _dockBoundary();
@@ -360,7 +360,7 @@ class _FloatBoxState extends State<FloatBoxPanel> with TickerProviderStateMixin 
               bottom: (_dragging?0.0:-200),
               duration: Duration(milliseconds: 200),
               child: AnimatedBuilder(
-                builder: (BuildContext context, Widget child) {
+                builder: (BuildContext context, Widget? child) {
                   return Transform.scale(
                     scale: _pulse.value,
                     child: child,
